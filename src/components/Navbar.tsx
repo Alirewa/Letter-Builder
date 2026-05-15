@@ -35,8 +35,7 @@ export default function Navbar() {
             <FileText size={16} className="text-white" />
           </div>
           <div className="leading-tight">
-            <span className="block text-sm font-bold text-gray-900 dark:text-slate-100">نامه‌ساز</span>
-            <span className="block text-xs text-gray-400 dark:text-slate-500 hidden sm:block">اپلای فا</span>
+            <span className="block text-sm font-bold text-gray-900 dark:text-slate-100">نامه‌ساز اختصاصی</span>
           </div>
         </div>
 

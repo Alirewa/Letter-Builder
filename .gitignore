@@ -25,6 +25,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Build artifacts
+out/
+build/
+dist/
+
+# Zip files
+*.zip
+*.tar.gz
+
 # Editor
 .vscode/
 .idea/

@@ -3,7 +3,7 @@ import './globals.css';
 import StoreHydrator from '@/components/layout/StoreHydrator';
 
 export const metadata: Metadata = {
-  title: 'نامه‌ساز اختصاصی | اپلای فا',
+  title: 'نامه‌ساز اختصاصی',
   description: 'سامانه تولید نامه‌های اداری و شرکتی با قالب‌های حرفه‌ای',
 };
 

@@ -67,7 +67,7 @@ export default function HomePage() {
           {/* Copyright footer */}
           <footer className="no-print px-4 py-3 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             <p className="text-xs text-center leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              نامه نگاری اختصاصی اپلای فا
+              نامه‌ساز اختصاصی
               <br />
               طراحی شده با ❤️ توسط{' '}
               <a
