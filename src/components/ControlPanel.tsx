@@ -1,0 +1,334 @@
+'use client';
+
+import { useRef, useState } from 'react';
+import {
+  Building2, Palette, FileText, PenLine, MapPin,
+  ImagePlus, Trash2, Check, Bold, Settings2,
+} from 'lucide-react';
+import { useLetterStore } from '@/store/letterStore';
+import SectionCard from '@/components/ui/SectionCard';
+import { fileToBase64, validateImageFile, cn } from '@/lib/utils';
+import { BODY_FONT_OPTIONS, LINE_HEIGHT_PRESETS } from '@/types/letter';
+
+const PRESET_COLORS = ['#1e3a5f', '#0f4c75', '#1b262c', '#6b2d5e', '#2d6a4f', '#b5451b', '#374151'];
+
+export default function ControlPanel() {
+  const letter = useLetterStore((s) => s.letter);
+  const { updateLetter, updateSignature } = useLetterStore();
+
+  const logoInputRef  = useRef<HTMLInputElement>(null);
+  const textareaRef   = useRef<HTMLTextAreaElement>(null);
+  const [logoError, setLogoError]       = useState<string | null>(null);
+  const [logoDragging, setLogoDragging] = useState(false);
+
+  // ── Logo handling ─────────────────────────────────────────────────────────
+  async function handleLogoFile(file: File) {
+    setLogoError(null);
+    const err = validateImageFile(file);
+    if (err) { setLogoError(err); return; }
+    try {
+      const base64 = await fileToBase64(file);
+      updateLetter({ logoBase64: base64 });
+    } catch { setLogoError('خطا در بارگذاری فایل.'); }
+  }
+
+  function handleLogoDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setLogoDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleLogoFile(file);
+  }
+
+  // ── Bold: wrap selected text in **...** ───────────────────────────────────
+  function wrapSelectionBold() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const { selectionStart: s, selectionEnd: e, value } = ta;
+    if (s === e) return; // nothing selected
+    const selected = value.slice(s, e);
+    const newVal = value.slice(0, s) + `**${selected}**` + value.slice(e);
+    updateLetter({ bodyText: newVal });
+    // restore cursor after React re-render
+    requestAnimationFrame(() => {
+      ta.setSelectionRange(s + 2, e + 2);
+      ta.focus();
+    });
+  }
+
+  const sig0 = letter.signatures[0];
+
+  return (
+    <div className="p-4">
+
+      {/* ── 0. تنظیمات نامه ─────────────────────────────────────────────── */}
+      <SectionCard title="تنظیمات نامه" icon={<Settings2 size={16} />}>
+        <div>
+          <label className="label">جهت نامه</label>
+          <div className="flex gap-2">
+            {/* RTL button */}
+            <button
+              type="button"
+              onClick={() => updateLetter({ letterDirection: 'rtl' })}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition-colors',
+                letter.letterDirection !== 'ltr'
+                  ? 'bg-blue-900 text-white border-blue-900'
+                  : 'border-gray-200 dark:border-slate-600 hover:border-blue-900'
+              )}
+              style={{ color: letter.letterDirection !== 'ltr' ? '#fff' : 'var(--text)' }}
+            >
+              <span style={{ direction: 'rtl', fontFamily: 'inherit' }}>فارسی / عربی</span>
+              <span className="opacity-75 text-xs">RTL</span>
+            </button>
+            {/* LTR button */}
+            <button
+              type="button"
+              onClick={() => updateLetter({ letterDirection: 'ltr' })}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition-colors',
+                letter.letterDirection === 'ltr'
+                  ? 'bg-blue-900 text-white border-blue-900'
+                  : 'border-gray-200 dark:border-slate-600 hover:border-blue-900'
+              )}
+              style={{ color: letter.letterDirection === 'ltr' ? '#fff' : 'var(--text)' }}
+            >
+              <span style={{ direction: 'ltr', fontFamily: 'inherit' }}>English</span>
+              <span className="opacity-75 text-xs">LTR</span>
+            </button>
+          </div>
+          {letter.letterDirection === 'ltr' && (
+            <p className="text-xs mt-2 opacity-60" style={{ color: 'var(--text-muted)', direction: 'rtl' }}>
+              حالت انگلیسی — جهت نامه و جایگاه تمام عناصر معکوس شد
+            </p>
+          )}
+        </div>
+      </SectionCard>
+
+      {/* ── 1. سربرگ ────────────────────────────────────────────────────── */}
+      <SectionCard title="سربرگ (هدر)" icon={<Building2 size={16} />}>
+        {/* Logo upload */}
+        <div className="mb-4">
+          <label className="label">لوگوی شرکت</label>
+          {letter.logoBase64 ? (
+            <div className="flex items-center gap-3 p-3 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-800">
+              <img src={letter.logoBase64} alt="لوگو" className="w-12 h-12 object-contain rounded" />
+              <p className="text-xs flex-1" style={{ color: 'var(--text-muted)' }}>لوگو بارگذاری شد</p>
+              <button type="button" onClick={() => updateLetter({ logoBase64: null })} className="btn-danger p-1.5"><Trash2 size={14} /></button>
+            </div>
+          ) : (
+            <div
+              onClick={() => logoInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setLogoDragging(true); }}
+              onDragLeave={() => setLogoDragging(false)}
+              onDrop={handleLogoDrop}
+              className={cn(
+                'flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
+                logoDragging
+                  ? 'border-blue-900 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-300 dark:border-slate-600 hover:border-blue-900 hover:bg-gray-50 dark:hover:bg-slate-800'
+              )}
+            >
+              <ImagePlus size={22} className="text-gray-400" />
+              <span className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+                کلیک کنید یا فایل را رها کنید
+                <br /><span className="opacity-60">(JPG، PNG، WebP، SVG — حداکثر ۲ مگابایت)</span>
+              </span>
+            </div>
+          )}
+          <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" className="hidden"
+            onChange={(e) => { if (e.target.files?.[0]) handleLogoFile(e.target.files[0]); }} />
+          {logoError && <p className="text-xs text-red-500 mt-1">{logoError}</p>}
+        </div>
+
+        <div className="mb-3">
+          <label className="label">نام برند / شرکت</label>
+          <input type="text" value={letter.companyBrandName} onChange={(e) => updateLetter({ companyBrandName: e.target.value })}
+            placeholder="شرکت فناوری اطلاعات نوین" className="input" />
+        </div>
+        <div className="mb-3">
+          <label className="label">متن مرکزی سربرگ</label>
+          <input type="text" value={letter.headerCenterText} onChange={(e) => updateLetter({ headerCenterText: e.target.value })}
+            placeholder="بسمه تعالی" className="input" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label">تاریخ نامه</label>
+            <input type="text" value={letter.letterDate} onChange={(e) => updateLetter({ letterDate: e.target.value })}
+              placeholder="۱۴۰۴/۰۲/۲۵" className="input text-left" dir="ltr" />
+          </div>
+          <div>
+            <label className="label">شماره نامه</label>
+            <input type="text" value={letter.letterNumber} onChange={(e) => updateLetter({ letterNumber: e.target.value })}
+              placeholder="LTR-240101-1234" className="input text-left" dir="ltr" />
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* ── 2. رنگ سربرگ ────────────────────────────────────────────────── */}
+      <SectionCard title="رنگ سربرگ و پاورقی" icon={<Palette size={16} />}>
+        <label className="label">رنگ اصلی</label>
+        <div className="flex items-center gap-3 mb-3">
+          <input type="color" value={letter.headerBgColor}
+            onChange={(e) => updateLetter({ headerBgColor: e.target.value })}
+            className="w-12 h-10 rounded-lg border border-gray-200 dark:border-slate-600 cursor-pointer p-0.5 bg-transparent" />
+          <div className="flex-1 h-10 rounded-lg border border-gray-200 dark:border-slate-600 flex items-center px-3"
+            style={{ backgroundColor: letter.headerBgColor + '22' }}>
+            <span className="text-sm font-mono" style={{ color: 'var(--text)' }}>{letter.headerBgColor}</span>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {PRESET_COLORS.map((color) => (
+            <button key={color} type="button" onClick={() => updateLetter({ headerBgColor: color })}
+              className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: color, borderColor: letter.headerBgColor === color ? '#fff' : 'transparent',
+                outline: letter.headerBgColor === color ? `2px solid ${color}` : 'none', outlineOffset: 2 }}>
+              {letter.headerBgColor === color && <Check size={12} color="#fff" />}
+            </button>
+          ))}
+        </div>
+      </SectionCard>
+
+      {/* ── 3. متن نامه ─────────────────────────────────────────────────── */}
+      <SectionCard title="متن نامه" icon={<FileText size={16} />}>
+        <div className="space-y-3">
+          <div>
+            <label className="label">از طرف (فرستنده)</label>
+            <input type="text" value={letter.fromCompany} onChange={(e) => updateLetter({ fromCompany: e.target.value })}
+              placeholder="نام شرکت یا سازمان" className="input" />
+          </div>
+          <div>
+            <label className="label">خطاب به (گیرنده)</label>
+            <input type="text" value={letter.toRecipient} onChange={(e) => updateLetter({ toRecipient: e.target.value })}
+              placeholder="مدیرعامل محترم شرکت ..." className="input" />
+          </div>
+          <div>
+            <label className="label">موضوع نامه</label>
+            <input type="text" value={letter.subject} onChange={(e) => updateLetter({ subject: e.target.value })}
+              placeholder="موضوع نامه را وارد کنید" className="input" />
+          </div>
+
+          {/* Typography toolbar */}
+          <div className="flex flex-wrap gap-2 items-center p-2 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600">
+            {/* Font family */}
+            <select
+              value={letter.bodyFontFamily ?? 'B Nazanin'}
+              onChange={(e) => updateLetter({ bodyFontFamily: e.target.value })}
+              className="input py-1 text-xs w-auto flex-1 min-w-0"
+              style={{ maxWidth: 130 }}
+            >
+              {BODY_FONT_OPTIONS.map((f) => (
+                <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+              ))}
+            </select>
+
+            {/* Font size */}
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min={10} max={22}
+                value={letter.bodyFontSize ?? 14}
+                onChange={(e) => updateLetter({ bodyFontSize: Math.max(10, Math.min(22, Number(e.target.value))) })}
+                className="input py-1 text-xs w-14 text-center"
+              />
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>px</span>
+            </div>
+
+            {/* Line height presets */}
+            <div className="flex gap-1">
+              {LINE_HEIGHT_PRESETS.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => updateLetter({ bodyLineHeight: p.value })}
+                  title={p.label}
+                  className={cn(
+                    'text-xs px-1.5 py-1 rounded border transition-colors',
+                    letter.bodyLineHeight === p.value
+                      ? 'bg-blue-900 text-white border-blue-900'
+                      : 'border-gray-200 dark:border-slate-600 hover:border-blue-900'
+                  )}
+                  style={{ color: letter.bodyLineHeight === p.value ? '#fff' : 'var(--text-muted)' }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Bold selection button */}
+            <button
+              type="button"
+              onClick={wrapSelectionBold}
+              title="متن انتخابی را بولد کن (یا تایپ کنید **متن**)"
+              className="btn-secondary p-1.5 flex-shrink-0"
+            >
+              <Bold size={14} />
+            </button>
+          </div>
+
+          {/* Textarea */}
+          <div>
+            <textarea
+              ref={textareaRef}
+              value={letter.bodyText}
+              onChange={(e) => updateLetter({ bodyText: e.target.value })}
+              placeholder="متن کامل نامه را اینجا بنویسید..."
+              rows={7}
+              className="input resize-y"
+              style={{ lineHeight: '1.9', fontFamily: `'${letter.bodyFontFamily}', serif` }}
+            />
+            <p className="text-xs mt-1 opacity-50" style={{ color: 'var(--text-muted)' }}>
+              برای بولد کردن: متن را انتخاب کنید و <strong>B</strong> را بزنید، یا بنویسید <span className="font-mono">**کلمه**</span>
+            </p>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* ── 4. امضا ─────────────────────────────────────────────────────── */}
+      <SectionCard title="امضا" icon={<PenLine size={16} />}>
+        {sig0 && (
+          <div className="flex items-center gap-3">
+            {/* Enable/disable toggle */}
+            <button
+              type="button"
+              onClick={() => updateSignature(sig0.id, { enabled: !sig0.enabled })}
+              className={cn(
+                'flex-shrink-0 w-9 h-5 rounded-full transition-colors relative',
+                sig0.enabled ? 'bg-blue-900' : 'bg-gray-300 dark:bg-slate-600'
+              )}
+              title={sig0.enabled ? 'غیرفعال کردن امضا' : 'فعال کردن امضا'}
+            >
+              <span className={cn(
+                'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all',
+                sig0.enabled ? 'right-0.5' : 'left-0.5'
+              )} />
+            </button>
+            <input
+              type="text"
+              value={sig0.label}
+              onChange={(e) => updateSignature(sig0.id, { label: e.target.value })}
+              disabled={!sig0.enabled}
+              placeholder="عنوان امضا"
+              className={cn('input flex-1', !sig0.enabled && 'opacity-40')}
+            />
+          </div>
+        )}
+      </SectionCard>
+
+      {/* ── 5. پاورقی ───────────────────────────────────────────────────── */}
+      <SectionCard title="پاورقی" icon={<MapPin size={16} />}>
+        <div className="space-y-3">
+          <div>
+            <label className="label">آدرس شرکت</label>
+            <input type="text" value={letter.companyAddress} onChange={(e) => updateLetter({ companyAddress: e.target.value })}
+              placeholder="تهران، خیابان ..." className="input" />
+          </div>
+          <div>
+            <label className="label">شماره تلفن</label>
+            <input type="text" value={letter.companyPhone} onChange={(e) => updateLetter({ companyPhone: e.target.value })}
+              placeholder="۰۲۱-۱۲۳۴۵۶۷۸" className="input" dir="ltr" />
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
