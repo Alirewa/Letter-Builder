@@ -39,13 +39,18 @@ export function getTodayJalali(): string {
 }
 
 // ── Auto letter number ────────────────────────────────────────────────────────
+// Format: 1405/آ/01  — Jalali year / آ / incrementing counter
+const LS_COUNTER_KEY = 'letter-saz-number-counter';
+
 export function generateLetterNumber(): string {
-  const now = new Date();
-  const y = now.getFullYear().toString().slice(-2);
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const r = String(Math.floor(Math.random() * 9000) + 1000);
-  return `LTR-${y}${m}${d}-${r}`;
+  if (typeof window === 'undefined') return '';
+  // Get current Jalali year (convert Eastern Arabic numerals → Western Arabic)
+  const jalaliYear = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric' })
+    .format(new Date())
+    .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
+  const counter = Number(localStorage.getItem(LS_COUNTER_KEY) ?? 0) + 1;
+  localStorage.setItem(LS_COUNTER_KEY, String(counter));
+  return `${jalaliYear}/آ/${String(counter).padStart(2, '0')}`;
 }
 
 // ── Contrast color for readable text on colored backgrounds ──────────────────

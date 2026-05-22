@@ -10,6 +10,9 @@ import {
   type SignatureBlock,
 } from '@/types/letter';
 import { deepClone, generateLetterNumber, getTodayJalali } from '@/lib/utils';
+import { BUILTIN_TEMPLATES, BUILTIN_IDS } from '@/lib/builtinTemplates';
+
+const LS_SEEDED_KEY = 'letter-saz-seeded-v1';
 
 interface LetterStore {
   letter: LetterState;
@@ -117,6 +120,14 @@ export const useLetterStore = create<LetterStore>()(
         if (Object.keys(patch).length > 0) {
           set((s) => ({ letter: { ...s.letter, ...patch } }));
         }
+        // Seed built-in templates on first run
+        if (typeof window !== 'undefined' && !localStorage.getItem(LS_SEEDED_KEY)) {
+          const existing = readTemplates();
+          const builtinIds = Object.values(BUILTIN_IDS) as string[];
+          const withoutBuiltins = existing.filter((t) => !builtinIds.includes(t.id));
+          writeTemplates([...BUILTIN_TEMPLATES, ...withoutBuiltins]);
+          localStorage.setItem(LS_SEEDED_KEY, '1');
+        }
       },
 
       // ── UI ────────────────────────────────────────────────────────────────
@@ -137,7 +148,8 @@ export const useLetterStore = create<LetterStore>()(
 
       loadTemplate: (id) => {
         const templates = readTemplates();
-        const found = templates.find((t) => t.id === id);
+        const found = templates.find((t) => t.id === id)
+          ?? BUILTIN_TEMPLATES.find((t) => t.id === id);
         if (!found) return;
         set({ letter: deepClone(found.state) });
       },

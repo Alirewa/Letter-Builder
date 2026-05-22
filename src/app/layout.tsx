@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import StoreHydrator from '@/components/layout/StoreHydrator';
+import LicenseGate from '@/components/LicenseGate';
 
 export const metadata: Metadata = {
   title: 'نامه‌ساز اختصاصی',
@@ -12,7 +13,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <StoreHydrator />
-        {children}
+        <LicenseGate>
+          {children}
+        </LicenseGate>
       </body>
     </html>
   );

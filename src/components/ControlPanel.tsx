@@ -3,25 +3,26 @@
 import { useRef, useState } from 'react';
 import {
   Building2, Palette, FileText, PenLine, MapPin,
-  ImagePlus, Trash2, Check, Bold, Settings2,
+  ImagePlus, Trash2, Check, Settings2,
 } from 'lucide-react';
 import { useLetterStore } from '@/store/letterStore';
 import SectionCard from '@/components/ui/SectionCard';
 import { fileToBase64, validateImageFile, cn } from '@/lib/utils';
 import { BODY_FONT_OPTIONS, LINE_HEIGHT_PRESETS } from '@/types/letter';
+import RichEditorDynamic from '@/components/RichEditorDynamic';
+import DatePickerInput from '@/components/DatePickerInput';
 
-const PRESET_COLORS = ['#1e3a5f', '#0f4c75', '#1b262c', '#6b2d5e', '#2d6a4f', '#b5451b', '#374151'];
+const PRESET_COLORS = ['#1976d2', '#1e3a5f', '#0f4c75', '#6b2d5e', '#2d6a4f', '#b5451b', '#374151'];
 
 export default function ControlPanel() {
   const letter = useLetterStore((s) => s.letter);
   const { updateLetter, updateSignature } = useLetterStore();
 
   const logoInputRef  = useRef<HTMLInputElement>(null);
-  const textareaRef   = useRef<HTMLTextAreaElement>(null);
   const [logoError, setLogoError]       = useState<string | null>(null);
   const [logoDragging, setLogoDragging] = useState(false);
 
-  // ── Logo handling ─────────────────────────────────────────────────────────
+  // ── Logo handling ──────────────────────────────────────────────────────────
   async function handleLogoFile(file: File) {
     setLogoError(null);
     const err = validateImageFile(file);
@@ -39,22 +40,6 @@ export default function ControlPanel() {
     if (file) handleLogoFile(file);
   }
 
-  // ── Bold: wrap selected text in **...** ───────────────────────────────────
-  function wrapSelectionBold() {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const { selectionStart: s, selectionEnd: e, value } = ta;
-    if (s === e) return; // nothing selected
-    const selected = value.slice(s, e);
-    const newVal = value.slice(0, s) + `**${selected}**` + value.slice(e);
-    updateLetter({ bodyText: newVal });
-    // restore cursor after React re-render
-    requestAnimationFrame(() => {
-      ta.setSelectionRange(s + 2, e + 2);
-      ta.focus();
-    });
-  }
-
   const sig0 = letter.signatures[0];
 
   return (
@@ -65,7 +50,6 @@ export default function ControlPanel() {
         <div>
           <label className="label">جهت نامه</label>
           <div className="flex gap-2">
-            {/* RTL button */}
             <button
               type="button"
               onClick={() => updateLetter({ letterDirection: 'rtl' })}
@@ -77,10 +61,9 @@ export default function ControlPanel() {
               )}
               style={{ color: letter.letterDirection !== 'ltr' ? '#fff' : 'var(--text)' }}
             >
-              <span style={{ direction: 'rtl', fontFamily: 'inherit' }}>فارسی / عربی</span>
+              <span>فارسی / عربی</span>
               <span className="opacity-75 text-xs">RTL</span>
             </button>
-            {/* LTR button */}
             <button
               type="button"
               onClick={() => updateLetter({ letterDirection: 'ltr' })}
@@ -92,15 +75,10 @@ export default function ControlPanel() {
               )}
               style={{ color: letter.letterDirection === 'ltr' ? '#fff' : 'var(--text)' }}
             >
-              <span style={{ direction: 'ltr', fontFamily: 'inherit' }}>English</span>
+              <span>English</span>
               <span className="opacity-75 text-xs">LTR</span>
             </button>
           </div>
-          {letter.letterDirection === 'ltr' && (
-            <p className="text-xs mt-2 opacity-60" style={{ color: 'var(--text-muted)', direction: 'rtl' }}>
-              حالت انگلیسی — جهت نامه و جایگاه تمام عناصر معکوس شد
-            </p>
-          )}
         </div>
       </SectionCard>
 
@@ -150,16 +128,20 @@ export default function ControlPanel() {
           <input type="text" value={letter.headerCenterText} onChange={(e) => updateLetter({ headerCenterText: e.target.value })}
             placeholder="بسمه تعالی" className="input" />
         </div>
+
         <div className="grid grid-cols-2 gap-3">
+          {/* Date picker */}
           <div>
             <label className="label">تاریخ نامه</label>
-            <input type="text" value={letter.letterDate} onChange={(e) => updateLetter({ letterDate: e.target.value })}
-              placeholder="۱۴۰۴/۰۲/۲۵" className="input text-left" dir="ltr" />
+            <DatePickerInput
+              value={letter.letterDate}
+              onChange={(val) => updateLetter({ letterDate: val })}
+            />
           </div>
           <div>
             <label className="label">شماره نامه</label>
             <input type="text" value={letter.letterNumber} onChange={(e) => updateLetter({ letterNumber: e.target.value })}
-              placeholder="LTR-240101-1234" className="input text-left" dir="ltr" />
+              placeholder="1405/آ/01" className="input text-left" dir="ltr" />
           </div>
         </div>
       </SectionCard>
@@ -253,33 +235,18 @@ export default function ControlPanel() {
                 </button>
               ))}
             </div>
-
-            {/* Bold selection button */}
-            <button
-              type="button"
-              onClick={wrapSelectionBold}
-              title="متن انتخابی را بولد کن (یا تایپ کنید **متن**)"
-              className="btn-secondary p-1.5 flex-shrink-0"
-            >
-              <Bold size={14} />
-            </button>
           </div>
 
-          {/* Textarea */}
-          <div>
-            <textarea
-              ref={textareaRef}
-              value={letter.bodyText}
-              onChange={(e) => updateLetter({ bodyText: e.target.value })}
-              placeholder="متن کامل نامه را اینجا بنویسید..."
-              rows={7}
-              className="input resize-y"
-              style={{ lineHeight: '1.9', fontFamily: `'${letter.bodyFontFamily}', serif` }}
-            />
-            <p className="text-xs mt-1 opacity-50" style={{ color: 'var(--text-muted)' }}>
-              برای بولد کردن: متن را انتخاب کنید و <strong>B</strong> را بزنید، یا بنویسید <span className="font-mono">**کلمه**</span>
-            </p>
-          </div>
+          {/* Rich text editor */}
+          <RichEditorDynamic
+            value={letter.bodyText}
+            onChange={(html) => updateLetter({ bodyText: html })}
+            fontFamily={letter.bodyFontFamily ?? 'B Nazanin'}
+            fontSize={letter.bodyFontSize ?? 14}
+            lineHeight={letter.bodyLineHeight ?? 2.2}
+            direction={letter.letterDirection ?? 'rtl'}
+            placeholder={letter.letterDirection === 'ltr' ? 'Write the letter body here...' : 'متن کامل نامه را اینجا بنویسید...'}
+          />
         </div>
       </SectionCard>
 
@@ -287,7 +254,6 @@ export default function ControlPanel() {
       <SectionCard title="امضا" icon={<PenLine size={16} />}>
         {sig0 && (
           <div className="flex items-center gap-3">
-            {/* Enable/disable toggle */}
             <button
               type="button"
               onClick={() => updateSignature(sig0.id, { enabled: !sig0.enabled })}
@@ -325,7 +291,7 @@ export default function ControlPanel() {
           <div>
             <label className="label">شماره تلفن</label>
             <input type="text" value={letter.companyPhone} onChange={(e) => updateLetter({ companyPhone: e.target.value })}
-              placeholder="۰۲۱-۱۲۳۴۵۶۷۸" className="input" dir="ltr" />
+              placeholder="+989111454518" className="input" dir="ltr" />
           </div>
         </div>
       </SectionCard>

@@ -1,12 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { X, Save, FolderOpen, Trash2, Clock, CheckCircle, Upload, Download as DownloadIcon } from 'lucide-react';
+import { X, Save, FolderOpen, Trash2, Clock, CheckCircle, Upload, Download as DownloadIcon, Star } from 'lucide-react';
 import { useLetterStore } from '@/store/letterStore';
 import type { LetterState, LetterTemplate } from '@/types/letter';
 import { cn, downloadJSON, readJSONFile } from '@/lib/utils';
+import { BUILTIN_TEMPLATES, BUILTIN_IDS } from '@/lib/builtinTemplates';
+
+const BUILTIN_ID_SET = new Set(Object.values(BUILTIN_IDS) as string[]);
 
 function relativeTime(ts: number): string {
+  if (ts === 0) return 'قالب پیش‌فرض';
   const diff = Date.now() - ts;
   const mins  = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
@@ -57,13 +61,13 @@ export default function TemplatesPanel() {
     setTemplates(listTemplates());
   }
 
-  // ── JSON export: download current letter state ───────────────────────────
+  // ── JSON export ──────────────────────────────────────────────────────────
   function handleExportJSON() {
     const { letter } = useLetterStore.getState();
     downloadJSON(letter, `نامه-export-${Date.now()}.json`);
   }
 
-  // ── JSON import: read file and load into live state ───────────────────────
+  // ── JSON import ──────────────────────────────────────────────────────────
   async function handleImportJSON(file: File) {
     setImportError(null);
     try {
@@ -77,6 +81,10 @@ export default function TemplatesPanel() {
       setImportError(e instanceof Error ? e.message : 'خطا در خواندن فایل');
     }
   }
+
+  // Separate built-in from user templates for display
+  const builtinList  = templates.filter((t) => BUILTIN_ID_SET.has(t.id));
+  const userList     = templates.filter((t) => !BUILTIN_ID_SET.has(t.id));
 
   if (!isTemplatesPanelOpen) return null;
 
@@ -92,7 +100,7 @@ export default function TemplatesPanel() {
           style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-2">
             <FolderOpen size={18} className="text-blue-900" />
-            <h2 className="font-bold text-sm" style={{ color: 'var(--text)' }}>قالب‌های ذخیره‌شده</h2>
+            <h2 className="font-bold text-sm" style={{ color: 'var(--text)' }}>قالب‌های نامه</h2>
           </div>
           <button type="button" onClick={toggleTemplatesPanel} className="btn-ghost p-1.5">
             <X size={18} />
@@ -124,68 +132,109 @@ export default function TemplatesPanel() {
           </div>
         </div>
 
-        {/* List */}
-        <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
-          {templates.length === 0 ? (
+        {/* Template list */}
+        <div className="flex-1 overflow-y-auto p-4 scrollbar-thin space-y-4">
+
+          {/* ── Built-in templates ─────────────────────────────────────── */}
+          {builtinList.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                <Star size={12} className="text-yellow-500 fill-yellow-400" />
+                قالب‌های پیش‌فرض
+              </p>
+              <div className="space-y-2">
+                {builtinList.map((t) => (
+                  <div
+                    key={t.id}
+                    className="card p-3"
+                    style={{ borderColor: '#1976d230', backgroundColor: '#1976d208' }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <Star size={11} className="text-yellow-500 fill-yellow-400 flex-shrink-0" />
+                          <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>{t.name}</p>
+                        </div>
+                        <span className="text-xs mt-0.5 block" style={{ color: 'var(--text-muted)' }}>قالب پیش‌فرض سیستم</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleLoad(t.id)}
+                        className="btn-secondary text-xs py-1 px-2.5 flex-shrink-0"
+                        style={{ borderColor: '#1976d2', color: '#1976d2' }}
+                      >
+                        بارگذاری
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── User-saved templates ───────────────────────────────────── */}
+          {userList.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>قالب‌های ذخیره‌شده</p>
+              <div className="space-y-2">
+                {userList.map((t) => (
+                  <div key={t.id} className="card p-3">
+                    {deleteConfirm === t.id ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-red-500 font-semibold">حذف شود؟</span>
+                        <div className="flex gap-1.5">
+                          <button type="button" onClick={() => setDeleteConfirm(null)} className="btn-secondary text-xs py-1 px-2">خیر</button>
+                          <button type="button" onClick={() => handleDelete(t.id)}
+                            className="text-xs py-1 px-2 rounded-lg text-red-500 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20">
+                            بله، حذف
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>{t.name}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Clock size={11} style={{ color: 'var(--text-muted)' }} />
+                            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{relativeTime(t.savedAt)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button type="button" onClick={() => handleLoad(t.id)} className="btn-secondary text-xs py-1 px-2.5">بارگذاری</button>
+                          <button type="button" onClick={() => setDeleteConfirm(t.id)} className="btn-danger p-1.5" title="حذف">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {builtinList.length === 0 && userList.length === 0 && (
             <div className="flex flex-col items-center justify-center h-40 gap-3 text-center">
               <FolderOpen size={36} style={{ color: 'var(--border)' }} />
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>هنوز قالبی ذخیره نشده</p>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {templates.map((t) => (
-                <div key={t.id} className="card p-3">
-                  {deleteConfirm === t.id ? (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-red-500 font-semibold">حذف شود؟</span>
-                      <div className="flex gap-1.5">
-                        <button type="button" onClick={() => setDeleteConfirm(null)} className="btn-secondary text-xs py-1 px-2">خیر</button>
-                        <button type="button" onClick={() => handleDelete(t.id)}
-                          className="text-xs py-1 px-2 rounded-lg text-red-500 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20">
-                          بله، حذف
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>{t.name}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Clock size={11} style={{ color: 'var(--text-muted)' }} />
-                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{relativeTime(t.savedAt)}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <button type="button" onClick={() => handleLoad(t.id)} className="btn-secondary text-xs py-1 px-2.5">بارگذاری</button>
-                        <button type="button" onClick={() => setDeleteConfirm(t.id)} className="btn-danger p-1.5" title="حذف">
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
           )}
         </div>
 
-        {/* ── JSON import / export ─────────────────────────────────── */}
+        {/* ── JSON import / export ───────────────────────────────────── */}
         <div className="px-5 py-3" style={{ borderTop: '1px solid var(--border)' }}>
           <p className="text-xs mb-2 font-semibold" style={{ color: 'var(--text-muted)' }}>درون‌ریزی / برون‌بری JSON</p>
           <div className="flex gap-2">
-            {/* Export */}
             <button type="button" onClick={handleExportJSON}
               className="btn-ghost text-xs flex-1 py-1.5 border border-dashed border-gray-300 dark:border-slate-600 rounded-lg">
               <DownloadIcon size={13} />
               برون‌بری
             </button>
-            {/* Import */}
             <button type="button" onClick={() => importInputRef.current?.click()}
               className={cn(
                 'btn-ghost text-xs flex-1 py-1.5 border border-dashed rounded-lg',
-                importOk
-                  ? 'border-green-400 text-green-600'
-                  : 'border-gray-300 dark:border-slate-600'
+                importOk ? 'border-green-400 text-green-600' : 'border-gray-300 dark:border-slate-600'
               )}>
               {importOk ? <CheckCircle size={13} /> : <Upload size={13} />}
               {importOk ? 'بارگذاری شد' : 'درون‌ریزی'}
@@ -196,9 +245,9 @@ export default function TemplatesPanel() {
           {importError && <p className="text-xs text-red-500 mt-1">{importError}</p>}
         </div>
 
-        {templates.length > 0 && (
+        {(builtinList.length + userList.length) > 0 && (
           <div className="px-5 py-2 text-xs text-center" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-            {templates.length} قالب ذخیره‌شده
+            {userList.length} قالب شخصی · {builtinList.length} قالب پیش‌فرض
           </div>
         )}
       </div>

@@ -242,6 +242,84 @@ input, textarea, select, button {
   border-radius: 9999px;
 }
 
+/* ── TipTap / ProseMirror editor styles ─────────────────────────────────── */
+.tiptap-editor .ProseMirror {
+  padding: 12px 16px;
+  outline: none;
+  min-height: 180px;
+}
+
+.tiptap-editor .ProseMirror p { margin: 0 0 0.25em; }
+.tiptap-editor .ProseMirror h1 { font-size: 1.4em; font-weight: bold; margin: 0.5em 0 0.25em; }
+.tiptap-editor .ProseMirror h2 { font-size: 1.2em; font-weight: bold; margin: 0.4em 0 0.2em; }
+.tiptap-editor .ProseMirror ul { list-style: disc; padding-inline-start: 1.5em; margin: 0.25em 0; }
+.tiptap-editor .ProseMirror ol { list-style: decimal; padding-inline-start: 1.5em; margin: 0.25em 0; }
+.tiptap-editor .ProseMirror li { margin-bottom: 2px; }
+.tiptap-editor .ProseMirror blockquote {
+  border-inline-start: 3px solid var(--border);
+  padding-inline-start: 0.75em;
+  margin: 0.5em 0;
+  color: var(--text-muted);
+}
+.tiptap-editor .ProseMirror hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.75em 0;
+}
+.tiptap-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 6px 0;
+  cursor: pointer;
+  outline: 2px solid transparent;
+  transition: outline-color 0.15s;
+}
+.tiptap-editor .ProseMirror img.ProseMirror-selectednode { outline-color: #1976d2; }
+
+/* Tables */
+.tiptap-editor .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  table-layout: fixed;
+  overflow: hidden;
+}
+.tiptap-editor .ProseMirror td,
+.tiptap-editor .ProseMirror th {
+  border: 1px solid var(--border);
+  padding: 5px 8px;
+  vertical-align: top;
+  position: relative;
+  min-width: 40px;
+}
+.tiptap-editor .ProseMirror th {
+  background-color: var(--bg);
+  font-weight: 600;
+}
+.tiptap-editor .ProseMirror .selectedCell::after {
+  z-index: 2;
+  position: absolute;
+  content: '';
+  inset: 0;
+  background: rgba(25, 118, 210, 0.1);
+  pointer-events: none;
+}
+
+/* Placeholder */
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: right;
+  color: var(--text-muted);
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+
+/* ── react-multi-date-picker overrides ──────────────────────────────────── */
+.rmdp-wrapper, .rmdp-container { font-family: 'Vazirmatn', 'Tahoma', sans-serif !important; }
+.rmdp-input { width: 100% !important; }
+
 /* ── Print / PDF ─────────────────────────────────────────────────────────── */
 @page { size: A4; margin: 0; }
 

@@ -68,13 +68,13 @@ export const LINE_HEIGHT_PRESETS = [
 
 export const DEFAULT_LETTER_STATE: LetterState = {
   letterDirection: 'rtl',
-  logoBase64: null,
-  companyBrandName: '',
+  logoBase64: null,                // set at runtime via StoreHydrator (bimfa-logo.png)
+  companyBrandName: 'گروه بیم فا',
   headerCenterText: 'بسمه تعالی',
   letterDate: '',
   letterNumber: '',
-  headerBgColor: '#1e3a5f',
-  fromCompany: '',
+  headerBgColor: '#1976d2',        // BIMFA blue
+  fromCompany: 'گروه بیم فا',
   toRecipient: '',
   subject: '',
   bodyText: '',
@@ -82,6 +82,6 @@ export const DEFAULT_LETTER_STATE: LetterState = {
   bodyFontSize: 14,
   bodyLineHeight: 2.2,
   signatures: DEFAULT_SIGNATURES,
-  companyAddress: '',
-  companyPhone: '',
+  companyAddress: 'کیش، گلدیس، خیابان وصال ۱، ساختمان اداری ایران، طبقه دوم، واحد ۱۳',
+  companyPhone: '+989111454518',
 };
