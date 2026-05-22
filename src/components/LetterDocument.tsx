@@ -102,7 +102,7 @@ export default function LetterDocument({ letter }: LetterDocumentProps) {
               />
             )}
             {letter.companyBrandName && (
-              <span style={{ fontSize: 15, fontWeight: 'bold', color: accent, lineHeight: 1.5, fontFamily: UI_FONT }}>
+              <span style={{ fontSize: 15, fontWeight: 'bold', color: accent, lineHeight: 1.5, fontFamily: UI_FONT, direction: isLTR ? 'ltr' : 'rtl', unicodeBidi: 'embed' }}>
                 {letter.companyBrandName}
               </span>
             )}

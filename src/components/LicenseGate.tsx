@@ -1,34 +1,32 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { KeyRound, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { isUnlocked, checkLicense, unlock } from '@/lib/license';
 
 interface Props {
   children: React.ReactNode;
 }
 
-// Auto-insert dashes: XXXX-XXXX-XXXX-XXXX-XXXX (total 24 chars with dashes, 20 real)
+// Auto-insert dashes in groups of 5: XXXXX-XXXXX-XXXXX-XXXXX
 function formatCode(raw: string): string {
   const clean = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 20);
-  return clean.match(/.{1,4}/g)?.join('-') ?? clean;
+  return clean.match(/.{1,5}/g)?.join('-') ?? clean;
 }
 
 export default function LicenseGate({ children }: Props) {
-  const [unlocked, setUnlocked]   = useState<boolean | null>(null); // null = checking
-  const [code, setCode]           = useState('');
-  const [error, setError]         = useState<string | null>(null);
-  const [success, setSuccess]     = useState(false);
-  const inputRef                  = useRef<HTMLInputElement>(null);
+  const [unlocked, setUnlocked] = useState<boolean | null>(null);
+  const [code, setCode]         = useState('');
+  const [error, setError]       = useState<string | null>(null);
+  const [success, setSuccess]   = useState(false);
+  const inputRef                = useRef<HTMLInputElement>(null);
 
-  // Check on mount (client only)
   useEffect(() => {
     setUnlocked(isUnlocked());
   }, []);
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const formatted = formatCode(e.target.value);
-    setCode(formatted);
+    setCode(formatCode(e.target.value));
     setError(null);
   }
 
@@ -36,81 +34,109 @@ export default function LicenseGate({ children }: Props) {
     if (checkLicense(code)) {
       unlock();
       setSuccess(true);
-      setTimeout(() => setUnlocked(true), 900);
+      setTimeout(() => setUnlocked(true), 800);
     } else {
-      setError('کد لایسنس نادرست است. لطفاً دوباره بررسی کنید.');
+      setError('کد وارد شده معتبر نیست.');
       inputRef.current?.focus();
+      inputRef.current?.select();
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') handleActivate();
-  }
-
-  // Still checking localStorage
   if (unlocked === null) return null;
-
-  // Already unlocked — render app
   if (unlocked) return <>{children}</>;
 
-  // ── License screen ──────────────────────────────────────────────────────────
+  const codeLength = code.replace(/-/g, '').length;
+  const isReady    = codeLength >= 20;
+
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-100 dark:bg-slate-900 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       dir="rtl"
+      style={{
+        background: 'radial-gradient(ellipse 120% 80% at 50% 0%, #dbeafe 0%, #f1f5f9 55%, #f8fafc 100%)',
+      }}
     >
+      {/* Card */}
       <div
-        className="card w-full max-w-md p-8 shadow-2xl flex flex-col items-center gap-6"
-        style={{ borderTop: '4px solid #1976d2' }}
+        className="relative w-full max-w-sm flex flex-col items-center gap-7 rounded-2xl px-8 py-10"
+        style={{
+          backgroundColor: '#ffffff',
+          boxShadow: '0 8px 48px 0 rgba(25,118,210,0.13), 0 1px 4px 0 rgba(0,0,0,0.07)',
+        }}
       >
-        {/* Logo placeholder / brand */}
+        {/* Top accent line */}
+        <div
+          className="absolute top-0 left-10 right-10 h-0.5 rounded-full"
+          style={{ background: 'linear-gradient(90deg, transparent, #1976d2 40%, #1976d2 60%, transparent)' }}
+        />
+
+        {/* Brand */}
         <div className="flex flex-col items-center gap-3 text-center">
+          {/* Logo mark */}
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: '#1976d2' }}
+            className="flex items-center justify-center rounded-2xl"
+            style={{ width: 68, height: 68, background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', boxShadow: '0 4px 18px rgba(25,118,210,0.35)' }}
           >
-            <KeyRound size={28} className="text-white" />
+            <img src="/bimfa-logo.svg" alt="BIMFA" style={{ width: 44, height: 44, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
           </div>
+
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>نامه‌ساز اختصاصی</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>گروه بیم فا</p>
+            <h1 className="text-lg font-bold tracking-tight" style={{ color: '#0d2444' }}>نامه‌ساز اختصاصی</h1>
+            <p className="text-sm mt-0.5" style={{ color: '#6b7280' }}>گروه بیم فا</p>
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-center leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          برای استفاده از نرم‌افزار، کد لایسنس ۲۰ رقمی خود را وارد کنید.
-        </p>
+        {/* Divider */}
+        <div className="w-full h-px" style={{ backgroundColor: '#f1f5f9' }} />
 
-        {/* Input */}
-        <div className="w-full space-y-3">
-          <input
-            ref={inputRef}
-            type="text"
-            value={code}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
-            maxLength={24}
-            autoFocus
-            className="input w-full text-center tracking-widest font-mono text-base"
-            dir="ltr"
-            style={{
-              letterSpacing: '0.15em',
-              borderColor: error ? '#ef4444' : undefined,
-            }}
-          />
+        {/* Input group */}
+        <div className="w-full flex flex-col gap-3">
+          <p className="text-xs text-center" style={{ color: '#9ca3af' }}>
+            کد لایسنس ۲۰ رقمی خود را وارد کنید
+          </p>
 
-          {/* Error / success */}
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={code}
+              onChange={handleInput}
+              onKeyDown={(e) => e.key === 'Enter' && isReady && !success && handleActivate()}
+              placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
+              maxLength={23}
+              autoFocus
+              autoComplete="off"
+              spellCheck={false}
+              dir="ltr"
+              className="w-full rounded-xl px-4 py-3 text-center font-mono text-sm tracking-widest outline-none transition-all"
+              style={{
+                border: error
+                  ? '1.5px solid #ef4444'
+                  : success
+                  ? '1.5px solid #22c55e'
+                  : '1.5px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                color: '#111827',
+                letterSpacing: '0.12em',
+                boxShadow: error
+                  ? '0 0 0 3px rgba(239,68,68,0.1)'
+                  : success
+                  ? '0 0 0 3px rgba(34,197,94,0.1)'
+                  : undefined,
+              }}
+            />
+          </div>
+
+          {/* Feedback */}
           {error && (
-            <div className="flex items-center gap-2 text-xs text-red-500">
-              <XCircle size={14} />
+            <div className="flex items-center justify-center gap-1.5 text-xs" style={{ color: '#ef4444' }}>
+              <XCircle size={13} />
               <span>{error}</span>
             </div>
           )}
           {success && (
-            <div className="flex items-center gap-2 text-xs text-green-600">
-              <CheckCircle2 size={14} />
+            <div className="flex items-center justify-center gap-1.5 text-xs" style={{ color: '#16a34a' }}>
+              <CheckCircle2 size={13} />
               <span>لایسنس با موفقیت فعال شد!</span>
             </div>
           )}
@@ -119,27 +145,30 @@ export default function LicenseGate({ children }: Props) {
           <button
             type="button"
             onClick={handleActivate}
-            disabled={code.replace(/-/g, '').length < 20 || success}
-            className="btn-primary w-full py-2.5 text-sm font-semibold justify-center"
-            style={{ backgroundColor: '#1976d2', borderColor: '#1976d2' }}
+            disabled={!isReady || success}
+            className="flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-semibold transition-all"
+            style={{
+              backgroundColor: isReady && !success ? '#1976d2' : '#bfdbfe',
+              color: isReady && !success ? '#ffffff' : '#93c5fd',
+              cursor: isReady && !success ? 'pointer' : 'not-allowed',
+              boxShadow: isReady && !success ? '0 2px 12px rgba(25,118,210,0.3)' : 'none',
+            }}
           >
-            {success ? 'در حال ورود...' : 'فعال‌سازی لایسنس'}
+            {success ? 'در حال ورود...' : 'فعال‌سازی'}
+            {!success && <ArrowLeft size={15} />}
           </button>
         </div>
 
         {/* Footer */}
-        <div className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
-          <a
-            href="https://bimfaa.ir"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:underline"
-            style={{ color: '#1976d2' }}
-          >
-            bimfaa.ir
-            <ExternalLink size={11} />
-          </a>
-        </div>
+        <a
+          href="https://letter.bimfaa.ir"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs transition-colors hover:underline"
+          style={{ color: '#9ca3af' }}
+        >
+          letter.bimfaa.ir
+        </a>
       </div>
     </div>
   );

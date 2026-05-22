@@ -8,7 +8,6 @@ import {
 import { useLetterStore } from '@/store/letterStore';
 import SectionCard from '@/components/ui/SectionCard';
 import { fileToBase64, validateImageFile, cn } from '@/lib/utils';
-import { BODY_FONT_OPTIONS, LINE_HEIGHT_PRESETS } from '@/types/letter';
 import RichEditorDynamic from '@/components/RichEditorDynamic';
 import DatePickerInput from '@/components/DatePickerInput';
 
@@ -52,7 +51,13 @@ export default function ControlPanel() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => updateLetter({ letterDirection: 'rtl' })}
+              onClick={() => {
+                // Restore Persian defaults when switching back to RTL
+                const patch: Record<string, string> = { letterDirection: 'rtl' };
+                if (letter.fromCompany === 'BimFaa Group') patch.fromCompany = 'گروه بیم فا';
+                if (letter.headerCenterText === 'Letter') patch.headerCenterText = 'بسمه تعالی';
+                updateLetter(patch);
+              }}
               className={cn(
                 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition-colors',
                 letter.letterDirection !== 'ltr'
@@ -61,12 +66,18 @@ export default function ControlPanel() {
               )}
               style={{ color: letter.letterDirection !== 'ltr' ? '#fff' : 'var(--text)' }}
             >
-              <span>فارسی / عربی</span>
+              <span>فارسی</span>
               <span className="opacity-75 text-xs">RTL</span>
             </button>
             <button
               type="button"
-              onClick={() => updateLetter({ letterDirection: 'ltr' })}
+              onClick={() => {
+                // Auto-fill English equivalents when switching to LTR
+                const patch: Record<string, string> = { letterDirection: 'ltr' };
+                if (letter.fromCompany === 'گروه بیم فا') patch.fromCompany = 'BimFaa Group';
+                if (letter.headerCenterText === 'بسمه تعالی') patch.headerCenterText = 'Letter';
+                updateLetter(patch);
+              }}
               className={cn(
                 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition-colors',
                 letter.letterDirection === 'ltr'
@@ -187,54 +198,6 @@ export default function ControlPanel() {
             <label className="label">موضوع نامه</label>
             <input type="text" value={letter.subject} onChange={(e) => updateLetter({ subject: e.target.value })}
               placeholder="موضوع نامه را وارد کنید" className="input" />
-          </div>
-
-          {/* Typography toolbar */}
-          <div className="flex flex-wrap gap-2 items-center p-2 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600">
-            {/* Font family */}
-            <select
-              value={letter.bodyFontFamily ?? 'B Nazanin'}
-              onChange={(e) => updateLetter({ bodyFontFamily: e.target.value })}
-              className="input py-1 text-xs w-auto flex-1 min-w-0"
-              style={{ maxWidth: 130 }}
-            >
-              {BODY_FONT_OPTIONS.map((f) => (
-                <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-              ))}
-            </select>
-
-            {/* Font size */}
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                min={10} max={22}
-                value={letter.bodyFontSize ?? 14}
-                onChange={(e) => updateLetter({ bodyFontSize: Math.max(10, Math.min(22, Number(e.target.value))) })}
-                className="input py-1 text-xs w-14 text-center"
-              />
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>px</span>
-            </div>
-
-            {/* Line height presets */}
-            <div className="flex gap-1">
-              {LINE_HEIGHT_PRESETS.map((p) => (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => updateLetter({ bodyLineHeight: p.value })}
-                  title={p.label}
-                  className={cn(
-                    'text-xs px-1.5 py-1 rounded border transition-colors',
-                    letter.bodyLineHeight === p.value
-                      ? 'bg-blue-900 text-white border-blue-900'
-                      : 'border-gray-200 dark:border-slate-600 hover:border-blue-900'
-                  )}
-                  style={{ color: letter.bodyLineHeight === p.value ? '#fff' : 'var(--text-muted)' }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Rich text editor */}

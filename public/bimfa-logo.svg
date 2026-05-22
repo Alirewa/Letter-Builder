@@ -1,12 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- Cube top face -->
-  <polygon points="100,10 175,52 100,94 25,52" fill="#1976d2"/>
-  <!-- Cube left face -->
-  <polygon points="25,52 100,94 100,170 25,128" fill="#0d47a1"/>
-  <!-- Cube right face -->
-  <polygon points="175,52 100,94 100,170 175,128" fill="#1565c0"/>
-  <!-- B letter on left face -->
-  <text x="52" y="145" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white" transform="skewY(30) translate(0,-55)">B</text>
-  <!-- F letter on right face -->
-  <text x="118" y="145" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white" transform="skewY(-30) translate(0,-5)">F</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200">
+  <!-- Isometric cube - top face -->
+  <polygon points="120,12 200,56 120,100 40,56" fill="#1976d2"/>
+  <!-- Isometric cube - left face -->
+  <polygon points="40,56 120,100 120,180 40,136" fill="#0d47a1"/>
+  <!-- Isometric cube - right face -->
+  <polygon points="200,56 120,100 120,180 200,136" fill="#1565c0"/>
+
+  <!-- Highlight edge on top-left -->
+  <polygon points="40,56 120,12 120,14 41,58" fill="#42a5f5" opacity="0.5"/>
+  <!-- Highlight edge on top-right -->
+  <polygon points="120,12 200,56 199,58 120,14" fill="#1e88e5" opacity="0.4"/>
+
+  <!-- "B" on left face -->
+  <text
+    x="62" y="146"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="42"
+    font-weight="900"
+    fill="white"
+    opacity="0.95"
+    transform="skewY(26) translate(0,-60)"
+  >B</text>
+
+  <!-- "F" on right face -->
+  <text
+    x="134" y="146"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="42"
+    font-weight="900"
+    fill="white"
+    opacity="0.90"
+    transform="skewY(-26) translate(0,-8)"
+  >F</text>
 </svg>
