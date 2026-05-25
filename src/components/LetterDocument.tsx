@@ -110,7 +110,16 @@ export default function LetterDocument({ letter }: LetterDocumentProps) {
 
           {/* Center text */}
           <div style={{ flex: 1, textAlign: 'center', fontFamily: UI_FONT }}>
-            <span style={{ fontSize: 16, fontWeight: 'bold', color: '#1a1a1a', letterSpacing: 2, fontFamily: UI_FONT }}>
+            <span style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: '#1a1a1a',
+              fontFamily: UI_FONT,
+              direction: dir,
+              unicodeBidi: 'embed',
+              display: 'inline-block',
+              lineHeight: 1.5,
+            }}>
               {letter.headerCenterText}
             </span>
           </div>
@@ -221,28 +230,31 @@ export default function LetterDocument({ letter }: LetterDocumentProps) {
         style={{
           backgroundColor: accent,
           color: contrast,
-          padding: '10px 28px',
+          padding: '0 28px',
+          height: 44,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontSize: 12,
           gap: 16,
           fontFamily: UI_FONT,
+          flexShrink: 0,
+          boxSizing: 'border-box',
         }}
       >
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', lineHeight: 1, height: '100%' }}>
           {letter.companyAddress && (
             <>
-              <span style={{ opacity: 0.75 }}>{L.address}</span>
-              <span>{letter.companyAddress}</span>
+              <span style={{ opacity: 0.75, lineHeight: 1, display: 'inline-flex', alignItems: 'center', height: '100%' }}>{L.address}</span>
+              <span style={{ lineHeight: 1, display: 'inline-flex', alignItems: 'center', height: '100%' }}>{letter.companyAddress}</span>
             </>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', lineHeight: 1, height: '100%' }}>
           {letter.companyPhone && (
             <>
-              <span style={{ opacity: 0.75 }}>{L.phone}</span>
-              <span style={{ direction: 'ltr' }}>{letter.companyPhone}</span>
+              <span style={{ opacity: 0.75, lineHeight: 1, display: 'inline-flex', alignItems: 'center', height: '100%' }}>{L.phone}</span>
+              <span style={{ direction: 'ltr', lineHeight: 1, display: 'inline-flex', alignItems: 'center', height: '100%' }}>{letter.companyPhone}</span>
             </>
           )}
         </div>
