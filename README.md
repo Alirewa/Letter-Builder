@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://alirewa.github.io/Letter-Builder-Fa/"><strong>🌐 Live Demo</strong></a>
+  <a href="https://alirewa.github.io/Letter-Builder/"><strong>🌐 Live Demo</strong></a>
 </p>
 
 ---
@@ -38,7 +38,7 @@
 ## Getting Started
 
 ```bash
-git clone https://github.com/Alirewa/Letter-Builder-Fa.git
+git clone https://github.com/Alirewa/Letter-Builder.git
 cd Letter-Builder-Fa
 npm install
 npm run dev
