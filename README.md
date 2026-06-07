@@ -22,16 +22,16 @@
 
 | | |
 |---|---|
-| 📄 **Live A4 Preview** | Every change reflects instantly |
+| 📄 **Live A4 Preview** | Every change reflects instantly on the page |
 | 📥 **PDF Export** | High-quality output with correct Persian font rendering |
-| 🔄 **RTL ↔ LTR Toggle** | Full direction switch — all element positions reverse automatically |
+| 🔄 **RTL ↔ LTR Toggle** | Full direction switch — layout, labels and alignment all reverse |
 | 🖼️ **Logo Upload** | Drag-and-drop (JPG, PNG, WebP, SVG — max 2 MB) |
-| ✍️ **Rich Text Editor** | Bold, italic, underline, headings, lists, tables, images, color |
+| ✍️ **Rich Text Editor** | Bold, italic, underline, headings, lists, tables, images, text color |
 | 📅 **Jalali Date Picker** | Shamsi calendar for Persian letters |
-| 📂 **Template System** | Save/load/delete letter templates in the browser |
-| 💾 **JSON Import/Export** | Transfer settings between devices |
+| 📂 **Template System** | Save / load / delete letter templates stored in the browser |
+| 💾 **JSON Import / Export** | Transfer all settings between devices |
 | 🌙 **Dark / Light Mode** | Full theme support |
-| 🔢 **Auto Letter Number** | Jalali year + auto-incrementing counter (e.g. `1405/آ/01`) |
+| 🔢 **Auto Letter Number** | Jalali year + auto-incrementing counter (`1405/آ/01`) |
 
 ---
 
@@ -53,10 +53,10 @@ Open [http://localhost:3000](http://localhost:3000)
 ## Build & Deploy
 
 ```bash
-npm run build   # outputs to /out — deploy to any static host
+npm run build   # outputs to /out — ready for any static host
 ```
 
-GitHub Pages is configured automatically via the included Actions workflow on every push to `master`.
+GitHub Pages deploys automatically via the included Actions workflow on every push to `master`.
 
 ---
 
@@ -81,5 +81,5 @@ GitHub Pages is configured automatically via the included Actions workflow on ev
 ---
 
 <p align="center">
-  Built by <a href="https://github.com/Alirewa">@Alirewa</a>
+  Designed & built by <a href="https://github.com/Alirewa">@Alirewa</a>
 </p>
