@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import StoreHydrator from '@/components/layout/StoreHydrator';
+import LicenseGate from '@/components/LicenseGate';
 
 export const metadata: Metadata = {
-  title: 'نامه‌ساز | Letter Builder',
-  description: 'Free Persian/English corporate letter generator — no backend, no sign-up.',
+  title: 'Letter Builder — نامه‌ساز',
+  description: 'Free Persian & English corporate letter builder — rich text editor, Jalali date, PDF export, RTL/LTR, dark mode. No backend, no sign-up.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +13,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <StoreHydrator />
-        {children}
+        <LicenseGate>
+          {children}
+        </LicenseGate>
       </body>
     </html>
   );
