@@ -52,9 +52,7 @@ export default function ControlPanel() {
             <button
               type="button"
               onClick={() => {
-                // Restore Persian defaults when switching back to RTL
                 const patch: Record<string, string> = { letterDirection: 'rtl' };
-                if (letter.fromCompany === 'BimFaa Group') patch.fromCompany = 'گروه بیم فا';
                 if (letter.headerCenterText === 'Letter') patch.headerCenterText = 'بسمه تعالی';
                 updateLetter(patch);
               }}
@@ -72,9 +70,7 @@ export default function ControlPanel() {
             <button
               type="button"
               onClick={() => {
-                // Auto-fill English equivalents when switching to LTR
                 const patch: Record<string, string> = { letterDirection: 'ltr' };
-                if (letter.fromCompany === 'گروه بیم فا') patch.fromCompany = 'BimFaa Group';
                 if (letter.headerCenterText === 'بسمه تعالی') patch.headerCenterText = 'Letter';
                 updateLetter(patch);
               }}

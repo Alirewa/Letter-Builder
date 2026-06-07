@@ -4,32 +4,32 @@
 import type { LetterTemplate, LetterState } from '@/types/letter';
 
 export const BUILTIN_IDS = {
-  bimfa:  'builtin-bimfa-v1',
-  formal: 'builtin-formal-v1',
+  corporate: 'builtin-corporate-v1',
+  formal:    'builtin-formal-v1',
 } as const;
 
-// ── قالب بیم فا ───────────────────────────────────────────────────────────────
-const BIMFA_STATE: LetterState = {
+// ── Corporate (RTL / Persian) ─────────────────────────────────────────────────
+const CORPORATE_STATE: LetterState = {
   letterDirection: 'rtl',
-  logoBase64: null,               // filled at runtime from /bimfa-logo.png
-  companyBrandName: 'گروه بیم فا',
+  logoBase64: null,
+  companyBrandName: 'نام شرکت',
   headerCenterText: 'بسمه تعالی',
   letterDate: '',
   letterNumber: '',
   headerBgColor: '#1976d2',
-  fromCompany: 'گروه بیم فا',
+  fromCompany: 'نام شرکت',
   toRecipient: '',
   subject: '',
   bodyText: '',
   bodyFontFamily: 'B Nazanin',
   bodyFontSize: 14,
   bodyLineHeight: 2.2,
-  signatures: [{ id: 'sig-bimfa-1', label: 'مدیرعامل', enabled: true }],
-  companyAddress: 'کیش، گلدیس، خیابان وصال ۱، ساختمان اداری ایران، طبقه دوم، واحد ۱۳',
-  companyPhone: '+989111454518',
+  signatures: [{ id: 'sig-corp-1', label: 'مدیرعامل', enabled: true }],
+  companyAddress: '',
+  companyPhone: '',
 };
 
-// ── قالب رسمی ─────────────────────────────────────────────────────────────────
+// ── Formal (RTL / Persian) ────────────────────────────────────────────────────
 const FORMAL_STATE: LetterState = {
   letterDirection: 'rtl',
   logoBase64: null,
@@ -52,10 +52,10 @@ const FORMAL_STATE: LetterState = {
 
 export const BUILTIN_TEMPLATES: LetterTemplate[] = [
   {
-    id: BUILTIN_IDS.bimfa,
-    name: 'قالب بیم فا',
+    id: BUILTIN_IDS.corporate,
+    name: 'قالب شرکتی',
     savedAt: 0,
-    state: BIMFA_STATE,
+    state: CORPORATE_STATE,
   },
   {
     id: BUILTIN_IDS.formal,
