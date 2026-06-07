@@ -250,7 +250,7 @@ export default function ControlPanel() {
           <div>
             <label className="label">شماره تلفن</label>
             <input type="text" value={letter.companyPhone} onChange={(e) => updateLetter({ companyPhone: e.target.value })}
-              placeholder="+989111454518" className="input" dir="ltr" />
+              placeholder="09123456789" className="input" dir="ltr" />
           </div>
         </div>
       </SectionCard>

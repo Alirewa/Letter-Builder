@@ -14,6 +14,8 @@
 
 <p align="center">
   <a href="https://alirewa.github.io/Letter-Builder/"><strong>🌐 Live Demo</strong></a>
+  &nbsp;·&nbsp;
+  <strong>Demo license key:</strong> <code>OPEND-EMO20-26LTR-BLDR0</code>
 </p>
 
 ---
@@ -32,6 +34,7 @@
 | 💾 **JSON Import / Export** | Transfer all settings between devices |
 | 🌙 **Dark / Light Mode** | Full theme support |
 | 🔢 **Auto Letter Number** | Jalali year + auto-incrementing counter (`1405/آ/01`) |
+| 🔐 **License Gate** | Optional soft-lock — easily customizable (see below) |
 
 ---
 
@@ -39,7 +42,7 @@
 
 ```bash
 git clone https://github.com/Alirewa/Letter-Builder.git
-cd Letter-Builder-Fa
+cd Letter-Builder
 npm install
 npm run dev
 ```
@@ -47,6 +50,23 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000)
 
 > **Note:** The app uses **B Nazanin** for Persian text. Place `BNazanin.ttf` and `BNazaninBold.ttf` in `public/fonts/` — this font is not redistributable and must be obtained separately.
+
+---
+
+## Customizing the License Key
+
+The license gate is a client-side soft-lock defined in `src/lib/license.ts`.  
+To set your own key, edit the `VALID_CODE` constant:
+
+```ts
+// src/lib/license.ts
+const VALID_CODE = 'YOURKEY0000000000000'; // exactly 20 alphanumeric chars
+```
+
+**Rules:**
+- Exactly **20 alphanumeric characters** (A–Z, 0–9, case-insensitive)
+- Dashes are stripped automatically — users can enter `XXXXX-XXXXX-XXXXX-XXXXX` or without dashes
+- The gate is **not** wired into `app/layout.tsx` by default — the app is open. To enable it, wrap `{children}` with `<LicenseGate>` in `src/app/layout.tsx`
 
 ---
 

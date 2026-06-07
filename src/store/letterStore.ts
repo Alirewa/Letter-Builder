@@ -12,7 +12,7 @@ import {
 import { deepClone, generateLetterNumber, getTodayJalali } from '@/lib/utils';
 import { BUILTIN_TEMPLATES, BUILTIN_IDS } from '@/lib/builtinTemplates';
 
-const LS_SEEDED_KEY = 'letter-saz-seeded-v1';
+const LS_SEEDED_KEY = 'letter-saz-seeded-v2'; // v2: removes old built-in templates
 
 interface LetterStore {
   letter: LetterState;
@@ -120,12 +120,13 @@ export const useLetterStore = create<LetterStore>()(
         if (Object.keys(patch).length > 0) {
           set((s) => ({ letter: { ...s.letter, ...patch } }));
         }
-        // Seed built-in templates on first run
+        // On v2 seed: strip any old built-in templates from localStorage
         if (typeof window !== 'undefined' && !localStorage.getItem(LS_SEEDED_KEY)) {
           const existing = readTemplates();
           const builtinIds = Object.values(BUILTIN_IDS) as string[];
-          const withoutBuiltins = existing.filter((t) => !builtinIds.includes(t.id));
-          writeTemplates([...BUILTIN_TEMPLATES, ...withoutBuiltins]);
+          // Remove stale built-ins; keep only user-created templates
+          const userOnly = existing.filter((t) => !builtinIds.includes(t.id));
+          writeTemplates(userOnly);
           localStorage.setItem(LS_SEEDED_KEY, '1');
         }
       },
